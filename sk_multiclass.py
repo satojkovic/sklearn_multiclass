@@ -9,12 +9,16 @@ from sklearn.cross_validation import train_test_split
 from sklearn.metrics import classification_report
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.decomposition import PCA
 
 
 def main():
-    # We only take the first two features.
+    # Apply PCA
     iris = load_iris()
-    X, y = iris.data[:, :2], iris.target
+    X, y = iris.data, iris.target
+    pca = PCA(n_components=2)
+    pca.fit(X)
+    X = pca.fit_transform(X)
 
     # multiclass and multilabel algorithms
     ovr = OneVsRestClassifier(LinearSVC(random_state=0)).fit(X, y)

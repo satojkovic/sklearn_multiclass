@@ -1,18 +1,44 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+"""
+Usage:
+    sk_multiclass.py [--lr|--lsvc|--svc]
+    sk_multiclass.py -h | --help
+Options:
+    --lr    LogisticRegression
+    --lsvc  LinearSVC
+    --svc   SVC
+"""
+
 from sklearn.datasets import load_iris
 from sklearn.multiclass import OneVsOneClassifier, \
     OneVsRestClassifier, OutputCodeClassifier
-from sklearn.svm import LinearSVC
+from sklearn.svm import LinearSVC, SVC
 from sklearn.cross_validation import train_test_split
 from sklearn.metrics import classification_report
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.linear_model import LogisticRegression
 from sklearn.decomposition import PCA
+from docopt import docopt
 
 
 def main():
+    # Parse args
+    args = docopt(__doc__)
+    lr = args['--lr']
+    lsvc = args['--lsvc']
+    svc = args['--svc']
+    if lr:
+        bc = LogisticRegression()
+    elif lsvc:
+        bc = LinearSVC(C=1.0, random_state=0)
+    elif svc:
+        bc = SVC(C=1.0, random_state=0)
+    else:
+        bc = LogisticRegression()
+
     # Apply PCA
     iris = load_iris()
     X, y = iris.data, iris.target
@@ -21,9 +47,9 @@ def main():
     X = pca.fit_transform(X)
 
     # multiclass and multilabel algorithms
-    ovr = OneVsRestClassifier(LinearSVC(random_state=0)).fit(X, y)
-    ovo = OneVsOneClassifier(LinearSVC(random_state=0)).fit(X, y)
-    oc = OutputCodeClassifier(LinearSVC(random_state=0)).fit(X, y)
+    ovr = OneVsRestClassifier(bc).fit(X, y)
+    ovo = OneVsOneClassifier(bc).fit(X, y)
+    oc = OutputCodeClassifier(bc).fit(X, y)
 
     # create a mesh to plot in
     h = .02
@@ -48,8 +74,6 @@ def main():
 
         # plot the training points
         plt.scatter(X[:, 0], X[:, 1], c=y, cmap=plt.cm.Paired)
-        plt.xlabel('Sepal length')
-        plt.ylabel('Sepal width')
         plt.xlim(x_min, x_max)
         plt.ylim(y_min, y_max)
         plt.title(titles[idx])
